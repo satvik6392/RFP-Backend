@@ -9,7 +9,6 @@ const { createLog } = require('./logs');
 
 dotenv.config();  // Load environment variables from .env file
 
-// Inside your controller function:
 
 exports.login = async (req, res) => {
     try {
@@ -400,9 +399,6 @@ exports.vendorRegistration = async (req, res) => {
 
 
 };
-
-
-
 
 
 exports.logout = async (req, res) => {

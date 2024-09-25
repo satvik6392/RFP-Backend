@@ -8,7 +8,7 @@ const multer = require('multer');
 
 dotenv.config();  // Load environment variables from .env file
 
-
+/* To add new user in company for roles : admin, procurement_manger, accounts */
 exports.addUser = async (req, res) => {
    
     const { name, email, password, role } = req.body;
@@ -51,7 +51,7 @@ exports.addUser = async (req, res) => {
     }
 };
 
-
+/* To get company list  */
 exports.getCompanyList = async (req, res) => {
     try {
       // Fetch company list from the database

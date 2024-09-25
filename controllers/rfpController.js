@@ -7,6 +7,8 @@ const { where, Op} = require('sequelize');
 const multer = require('multer'); 
 const { type } = require('os');
 
+
+/* To create a new rfp for company */
 exports.createRfp = async (req, res) => {
     const {
       item_name, rfp_no, quantity, last_date, minimum_price,
@@ -254,7 +256,7 @@ exports.getRFPByUserId = async (req, res) => {
     }
 };
 
-
+/* Apply quotes on a rfp - vendor*/
 exports.applyQuotes = async (req, res) => {
    
     const { item_price, total_cost, rfp_id } = req.body;
@@ -327,7 +329,7 @@ exports.applyQuotes = async (req, res) => {
     }
 };
 
-
+/* Get quotes against a rfp */
 exports.getQuotes =  async (req, res) => {
     const rfp_id = req.body.rfp_id;
     const company_id = req.params.companyID;

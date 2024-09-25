@@ -10,5 +10,6 @@ const { roles } = require('../config/roles');
 router.post('/',auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin]),upload.none(), userController.addUser);
 
 
+/* To get the list of company : used when vendor wants to register for a company */
 router.get('/company-list',userController.getCompanyList);
 module.exports = router;

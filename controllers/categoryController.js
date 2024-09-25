@@ -10,6 +10,8 @@ const { error } = require('console');
 
 dotenv.config();  // Load environment variables from .env file
 
+
+// get categories of a company
 exports.getCategory = async (req, res) => {
     const { companyId, categoryId } = req.params;  // Get params from the URL
     
@@ -60,6 +62,8 @@ exports.getCategory = async (req, res) => {
     }
 };
 
+
+// Add a new category in company
 exports.addCategory = async (req, res) => {
     // Handle file upload
     

@@ -8,6 +8,7 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 
 
+/*To get the list of vendors of a company*/
 exports.getVendorList = async (req, res) => {
     try {
         const { companyID, vendorId } = req.params;
@@ -106,6 +107,7 @@ exports.getVendorList = async (req, res) => {
     }
 };
 
+/* To get the vendors of a particular category*/
 exports.getVendorListByCategory = async (req, res) => {
     console.log("Inside the getVendorListByCategory controller.");
     
@@ -211,6 +213,7 @@ exports.getVendorListByCategory = async (req, res) => {
     }
 };
 
+/* To update the status of vendor from : Approve/Reject */
 exports.updateStatus = async (req, res) => {
     const { vendor_id, status } = req.body;
     const company_id = req.company_id;
@@ -279,6 +282,7 @@ exports.updateStatus = async (req, res) => {
     }
 };
 
+/* To download the vendor data in an excel sheet*/
 exports.downloadVendorExcel =  async (req, res) => {
     const company_id = req.params.companyID;
     try {

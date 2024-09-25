@@ -1,5 +1,7 @@
 const models = require('../config/initModels'); // Adjust the path as needed
 
+
+// Add Logs in log table
 exports.createLog = async ({ user_id, req_url, action, details, ip_address, category }) => {
     try {
         const newLog = await models.logs.create({
