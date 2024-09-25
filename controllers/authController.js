@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv'); // Import the token model
 const company = require('../models/company');
 const { where } = require('sequelize');
+const { createLog } = require('./logs');
 // const { response } = require('../app');
 
 dotenv.config();  // Load environment variables from .env file
@@ -12,19 +13,51 @@ dotenv.config();  // Load environment variables from .env file
 
 exports.login = async (req, res) => {
     try {
+        
+        const req_url = req.originalUrl; // Capture the request URL
+        const ip_address = req.ip; 
         // Find the user by email
         var companyName;
         const existingCompany = await models.company.findOne({ where: { id: req.body.company_id } });
         if (!existingCompany) {
+
+            // inserting logs in log table
+            await createLog({
+                user_id:null,
+                req_url,
+                action: "Login", // Describe the action
+                details: "Invalid company ID provided during login",
+                ip_address,
+                category: "error"
+            });
+
             return res.status(400).json({ "response": "error", "error": "Invalid company!" });
         }
         companyName = existingCompany.name;
         const fetchUserFromDB = await models.users.findOne({ where: { email: req.body.email, company_id: req.body.company_id } });
 
         if (!fetchUserFromDB) {
+            // inserting logs in log table
+            await createLog({
+                user_id:null,
+                req_url,
+                action: "Login", // Describe the action
+                details: "Login with wrong credentials",
+                ip_address,
+                category: "error"
+            });
             return res.status(400).json({ response: 'error', error: 'User not found!' });
         }
         if (fetchUserFromDB.status != 'Approved') {
+             // inserting logs in log table
+             await createLog({
+                user_id:null,
+                req_url,
+                action: "Login", // Describe the action
+                details: `Attemped loging with, account status: ${fetchUserFromDB.status}`,
+                ip_address,
+                category: "error"
+            });
             return res.status(400).json({ 'response': 'error', 'error': "Account is not approved!" });
         }
 
@@ -56,6 +89,15 @@ exports.login = async (req, res) => {
                 expires_in: expiryDate
             });
 
+             // inserting logs in log table
+             await createLog({
+                user_id:fetchUserFromDB.user_id,
+                req_url,
+                action: "Login", // Describe the action
+                details: `Login successfully`,
+                ip_address,
+                category: "success"
+            });
             // Send the response back without the password
             return res.status(200).json({
                 response: 'success',
@@ -69,12 +111,22 @@ exports.login = async (req, res) => {
             });
 
         } else {
+              // inserting logs in log table
+              await createLog({
+                user_id:null,
+                req_url,
+                action: "Login", // Describe the action
+                details: `Invalid credentials`,
+                ip_address,
+                category: "success"
+            });
             // If the email or password is incorrect, send a 401 Unauthorized response
-            return res.status(401).json({ response: 'error', message: 'Invalid email or password' });
+            return res.status(401).json({ response: 'error', error: 'Invalid email or password' });
         }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ response: 'error', message: 'Internal server error' });
+        z
+        return res.status(500).json({ response: 'error', error: 'Internal server error' });
     }
 };
 
@@ -83,29 +135,83 @@ exports.login = async (req, res) => {
 // Else it will create a company and register you as an admin for that particular company
 exports.adminRegistration = async (req, res) => {
     try {
+        const req_url = req.originalUrl; // Capture the request URL
+        const ip_address = req.ip; 
         const { first_name, last_name, email, password, company_name } = req.body;
-
-        // Check if all required fields are provided
-        if (!first_name || !last_name || !email || !password || !company_name) {
-            return res.status(400).json({ response: 'error', message: 'All fields are required' });
+        const errorMessages = []; // Array to hold error messages
+    
+        // Check each field and add an error message if it is missing
+        if (!first_name) {
+            errorMessages.push('First name is required');
+        }
+        if (!last_name) {
+            errorMessages.push('Last name is required');
+        }
+        if (!email) {
+            errorMessages.push('Email is required');
+        }
+        if (!password) {
+            errorMessages.push('Password is required');
+        }
+        if (!company_name) {
+            errorMessages.push('Company name is required');
+        }
+    
+        // If there are any error messages, return them
+        if (errorMessages.length > 0) {
+             // inserting logs in log table
+         await createLog({
+            user_id:null,
+            req_url,
+            action: "Admin registration", // Describe the action
+            details: `${errorMessages}`,
+            ip_address,
+            category: "error"
+        });
+            return res.status(400).json({ response: 'error', 'error': errorMessages });
         }
 
         // Check if the company already exists
         const existingCompany = await models.company.findOne({ where: { name: company_name } });
         if (existingCompany) {
-            return res.status(400).json({ response: 'error', message: 'Company already exists' });
+             // inserting logs in log table
+         await createLog({
+            user_id:null,
+            req_url,
+            action: "Admin registration", // Describe the action
+            details: `Company already exists`,
+            ip_address,
+            category: "error"
+        });
+            return res.status(400).json({ response: 'error', 'error': 'Company already exists' });
         }
 
         // Check if the email already exists in the users table
-        const existingUser = await models.users.findOne({ where: { email: email } });
-        if (existingUser) {
-            return res.status(400).json({ response: 'error', message: 'Email already in use' });
-        }
+        // const existingUser = await models.users.findOne({ where: { email: email } });
+        // if (existingUser) {
+        //     await createLog({
+        //         user_id:null,
+        //         req_url,
+        //         action: "Admin registration", // Describe the action
+        //         details: `Company already exists`,
+        //         ip_address,
+        //         category: "error"
+        //     });
+        //     return res.status(400).json({ response: 'error', 'error': 'Email already in use' });
+        // }
 
         // Create a new company entry
         const newCompany = await models.company.create({
             name: company_name,
             // Add any additional fields required for the company table
+        });
+        await createLog({
+            user_id:null,
+            req_url,
+            action: "Admin registration", // Describe the action
+            details: `Company created with id : ${newCompany.id}`,
+            ip_address,
+            category: "success"
         });
         console.log(newCompany);
 
@@ -119,6 +225,14 @@ exports.adminRegistration = async (req, res) => {
             type: 'admin',  // Mark the user as an admin
             status: 'Approved',  // Set the status for the admin
             // Add any additional fields required for the user table
+        });
+        await createLog({
+            user_id:newUser.id,
+            req_url,
+            action: "Admin registration", // Describe the action
+            details: `Admin registered successfully with id : ${newUser.id}`,
+            ip_address,
+            category: "success"
         });
 
         // Return success response
@@ -137,13 +251,22 @@ exports.adminRegistration = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ response: 'error', message: 'Internal server error' });
+        await createLog({
+            user_id:null,
+            req_url,
+            action: "Admin registration", // Describe the action
+            details: `Internal server error : ${error.message}`,
+            ip_address,
+            category: "error"
+        });
+        return res.status(500).json({ response: 'error', 'error': 'Internal server error' });
     }
 };
 
 
 exports.vendorRegistration = async (req, res) => {
-    console.log("coming in vendor registration controller");
+    const req_url = req.originalUrl; // Capture the request URL
+    const ip_address = req.ip; 
 
     try {
 
@@ -174,13 +297,9 @@ exports.vendorRegistration = async (req, res) => {
         }
         if (!mobile) errors.push("Mobile is required");
         if (mobile && !/^\d{10}$/.test(mobile)) errors.push("Enter a valid mobile no.");
-        console.log(mobile);
+        // console.log(mobile);
 
-        const existingCompany = await models.company.findOne({ where: { id: company_id } });
-        if (!existingCompany) {
-            errors.push("Invalid company!");
-            return res.status(400).json({ "response": "error", "error": errors });
-        }
+       
         const mailExistForCompany = await models.users.findOne({ where: { email: email, company_id: company_id } });
         if (mailExistForCompany) {
             errors.push("This mail is already in use.");
@@ -199,11 +318,32 @@ exports.vendorRegistration = async (req, res) => {
                 break;
             }
         }
-        if (errors.length > 0) {
+        
+
+        const existingCompany = await models.company.findOne({ where: { id: company_id } });
+        if (!existingCompany) {
+            errors.push("Invalid company!");
+            await createLog({
+                user_id:null,
+                req_url,
+                action: "Vendor registration", // Describe the action
+                details: `${errors}`,
+                ip_address,
+                category: "error"
+            });
             return res.status(400).json({ "response": "error", "error": errors });
         }
-
-
+        if (errors.length > 0) {
+            await createLog({
+                user_id:null,
+                req_url,
+                action: "Vendor registration", // Describe the action
+                details: `${errors}`,
+                ip_address,
+                category: "error"
+            });
+            return res.status(400).json({ "response": "error", "error": errors });
+        }
         /// create vendor in users table
         const newUser = await models.users.create({
             name: `${firstname} ${lastname}`,
@@ -234,17 +374,26 @@ exports.vendorRegistration = async (req, res) => {
                 category_id: categoryId,  // Use the user's company_id if needed
             });
         }
-
+    
+        // insert log in log table
+        await createLog({
+            user_id:newUser.user_id,
+            req_url,
+            action: "Vendor registration", // Describe the action
+            details: `Vendor registered successfully with user id : ${newUser.user_id}`,
+            ip_address,
+            category: "success"
+        });
         return res.status(200).json(
             {
                 response: "success",
                 message: "registered succesfully",
-                status: "Pending"
+                status: "Pending",
+                company_id : company_id
             });
 
     } catch (error) {
         console.log(error);
-
         return res.status(500).json({ response: "error", error: "Internal server error!" });
 
     }

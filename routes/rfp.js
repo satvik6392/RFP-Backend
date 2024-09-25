@@ -19,6 +19,9 @@ router.get('/getrfp/:companyID/:userId',auhtMiddlewares.authenticateToken,auhtMi
 /* To apply quotes on a rfp */
 router.post('/apply/:companyID',upload.none(), auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.vendor]), rfpController.applyQuotes);
 
+/* To close a rfp */
+router.post('/closerfp/:companyID',upload.none(),auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin,roles.procurmentManager]),rfpController.closeRFP);
+
 /* To get applied quotes on a rfp */
 router.get('/quotes/:companyID',upload.none(),auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin,roles.procurmentManager,roles.accounts]),rfpController.getQuotes);
 module.exports = router;

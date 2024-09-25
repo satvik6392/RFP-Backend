@@ -12,4 +12,6 @@ router.get('/:companyId/:categoryId?', categoryController.getCategory);
 /* To add a new category */
 router.post('/',auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin,roles.procurmentManager]), categoryController.addCategory);
 
+
+
 module.exports = router;

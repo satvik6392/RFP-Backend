@@ -382,3 +382,35 @@ exports.getQuotes =  async (req, res) => {
         return res.status(400).json({ response: "error", error: error.message });
     }
 };
+
+/*  controller To close a rfp*/
+exports.closeRFP = async (req, res) => {
+    const { rfp_id } = req.body;
+
+    // Check if rfp_id is provided
+    if (!rfp_id) {
+        return res.status(400).json({ response: 'error', error: 'RFP ID is required.' });
+    }
+
+    try {
+        // Find the RFP by ID
+        const rfp = await models.rfps.findOne({ where: { id: rfp_id } });
+
+        // Check if the RFP exists
+        if (!rfp) {
+            return res.status(404).json({ response: 'error', error: 'RFP not found.' });
+        }
+        if(rfp.status == 'closed')
+        {
+            return res.status(400).json({response : "error","error":"RFP is already closed"})
+        }
+
+        // Update the status to 'closed'
+        await models.rfps.update({ status: 'closed' }, { where: { id: rfp_id } });
+
+        return res.status(200).json({ response: 'success', message: 'RFP closed successfully.' });
+    } catch (error) {
+        console.error('Error closing RFP:', error);
+        return res.status(500).json({ response: 'error', error: 'Internal server error.' });
+    }
+};

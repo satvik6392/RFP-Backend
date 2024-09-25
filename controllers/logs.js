@@ -1,13 +1,8 @@
-// routes/logs.js
-const express = require('express');
-const router = express.Router();
 const models = require('../config/initModels'); // Adjust the path as needed
 
-router.post('/logs', async (req, res) => {
-    const { user_id, req_url, action, details, ip_address, category } = req.body;
-
+exports.createLog = async ({ user_id, req_url, action, details, ip_address, category }) => {
     try {
-        const newLog = await logs.create({
+        const newLog = await models.logs.create({
             user_id,
             req_url,
             action,
@@ -15,12 +10,11 @@ router.post('/logs', async (req, res) => {
             ip_address,
             category,
         });
-
-        return;
+        return newLog;
     } catch (error) {
         console.error('Error creating log entry:', error);
-        return;
+        throw error; // Re-throw the error to be handled by the caller
     }
-});
+};
 
-module.exports = router;
+

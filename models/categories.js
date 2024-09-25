@@ -23,6 +23,10 @@ module.exports = function(sequelize, DataTypes) {
     company_id: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    deletedAt: {  // Define the deleted_at column
+      type: DataTypes.DATE,
+      allowNull: true  // Allow null for soft deletion
     }
   }, {
     sequelize,
