@@ -25,7 +25,9 @@ exports.getCategory = async (req, res) => {
 
         // Query to fetch categories based on companyId, and categoryId if provided
         let queryOptions = {
-            where: { company_id: companyId, status: "Active" }
+            where: { company_id: companyId, status: {
+                [Op.not]: "Deleted" // Exclude records where status is "Deleted"
+            }}
         };
 
         // If categoryId is provided, add it to the query options
@@ -366,7 +368,9 @@ exports.deleteCategory = async (req, res) => {
         return res.status(400).json({ 'response': 'error', 'error': "Category id requied!" });
     }
     try {
-        var category = await models.categories.findOne({ where: { company_id: company_id, id: category_id, status: "Active" } });
+        var category = await models.categories.findOne({ where: { company_id: company_id, id: category_id, status: {
+            [Op.not]: "Deleted" // Exclude records where status is "Deleted"
+        }} });
         console.log(category);
         if (!category) {
             return res.status(400).json({ "response": "error", "error": "Cagtegory not found!" });
@@ -383,3 +387,79 @@ exports.deleteCategory = async (req, res) => {
         return res.status(400).json({ "response": "error", "error": "Internal server error." });
     }
 }
+
+exports.updateCategoryStatus = async (req, res) => {
+    const company_id = req.company_id;
+    const category_id = req.body.category_id; // Assuming category_id is coming from the request body
+    const newStatus = req.body.new_status; // Assuming new_status is also coming from the request body
+
+    if(newStatus != "Active" && newStatus != "Inactive")
+    {
+        return res.status(400).json({
+            response:'error',
+            'error':"Invalid status"
+        })
+    }
+    if (!category_id || !newStatus) {
+        return res.status(400).json({
+            response: 'error',
+            error: 'Category ID and new status are required.',
+        });
+    }
+
+    try {
+        // Find the category
+        const category = await models.categories.findOne({
+            where: { id: category_id, company_id: company_id },
+        });
+
+        // Check if the category exists
+        if (!category) {
+            return res.status(404).json({
+                response: 'error',
+                error: 'No category found!',
+            });
+        }
+
+        // Check if the category status is 'deleted'
+        if (category.status === 'Deleted') {
+            return res.status(400).json({
+                response: 'error',
+                error: 'Category is deleted and cannot be updated.',
+            });
+        }
+
+        // Check for status update conditions
+        if (newStatus === 'Active' && category.status === 'Active') {
+            return res.status(400).json({
+                response: 'error',
+                error: 'Category is already active.',
+            });
+        }
+
+        if (newStatus === 'Inactive' && category.status === 'Inactive') {
+            return res.status(400).json({
+                response: 'error',
+                error: 'Category is already inactive.',
+            });
+        }
+
+        // Update the category status
+        await models.categories.update(
+            { status: newStatus },
+            { where: { id: category_id } }
+        );
+
+        return res.status(200).json({
+            response: 'success',
+            message: `Category status updated to ${newStatus}.`,
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            response: 'error',
+            error: 'An error occurred while updating the category status.',
+        });
+    }
+};

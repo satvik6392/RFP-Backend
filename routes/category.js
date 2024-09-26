@@ -16,4 +16,6 @@ router.post('/',auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole(
 
 router.delete('/:categoryId',auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin,roles.procurmentManager]),upload.none(),categoryController.deleteCategory);
 
+
+router.put('/',upload.none(),auhtMiddlewares.authenticateToken,auhtMiddlewares.authorizeRole([roles.admin,roles.procurmentManager]),categoryController.updateCategoryStatus);
 module.exports = router;
