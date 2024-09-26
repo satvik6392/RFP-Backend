@@ -41,15 +41,15 @@ module.exports = function(sequelize, DataTypes) {
           { name: "id" },
         ]
       },
-      {
-        name: "unique_name_company",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "name" },
-          { name: "company_id" }  // Composite unique constraint
-        ]
-      },
+      // {
+      //   name: "unique_name_company",
+      //   unique: true,
+      //   using: "BTREE",
+      //   fields: [
+      //     { name: "name" },
+      //     { name: "company_id" }  // Composite unique constraint
+      //   ]
+      // },
     ]
   });
 };
