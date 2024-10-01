@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var fs = require('fs');
+const session = require('express-session');
+const cors = require('cors');
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,6 +21,18 @@ const upload = require('./config/multer');
 const { request } = require('http');
 
 var app = express();
+
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true, // Allow credentials (cookies)
+}));
+
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false, maxAge: 30 * 60 * 1000 } // Session expires after 30 minutes
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

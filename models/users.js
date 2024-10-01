@@ -32,6 +32,15 @@ module.exports = function(sequelize, DataTypes) {
     company_id: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    two_factor_secret: { // New column for storing TOTP secret key
+      type: DataTypes.STRING(255),
+      allowNull: true // Can be null if 2FA is not enabled
+    },
+    isTwoFactorEnabled: { // Optional: Track if 2FA is enabled
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     sequelize,
